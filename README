@@ -1,0 +1,22 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1074
+
+This script simualate code calltips in a new bottow window of Vim.
+In fact, it display python help doc strings of word under the cursor
+by scanning the imported modules in the current file.
+this file Reference :    http://vim.sourceforge.net/scripts/script.php?script_id=73 
+
+Note: Because Python language is dynamic and the type of object is certain 
+         when running, the calltips is only displayed for the part of all object.   
+
+It require Python and Vim compiled with "+python" 
+and MAKE SURE "set iskeyword+=."
+    
+It work well in my box in Win2000/XP + Vim6.3 + python2.3. 
+It can also work in GNU/Linux.
+Note: as I know, Vim6.2 come into conflict with Python2.3, becase Vim6.2
+         is compiled with Python2.1. you can update vim version to 6.3.
+        Maybe yours not.
+
+More detail is in the header of script file. 
+
+I write a tip(vimtip #778) about the script for all Pythoner. I wish you enjoy it.
