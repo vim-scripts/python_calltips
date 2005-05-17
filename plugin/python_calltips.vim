@@ -1,6 +1,6 @@
 " vim: ai et ts=4 sw=4 tw=78:
-"    Python_Calltips 1.0 
-"    (C) Copyright 2004 by tocer deng   MAIL: write2tocer@hotmail.com
+"    Python_Calltips 1.01 
+"    (C) Copyright 2004 by tocer deng   MAIL: tocer.deng@gmail.com
 "
 "    This script simulates code call tips in a new bottom window of Vim.
 "    In fact, it displays Python help doc strings of word under the cursor
@@ -268,136 +268,138 @@ def CT_ParseSyntax():
     f = StringIO.StringIO(text)
     g = tokenize.generate_tokens(f.readline)
     lineNo = 0
-    for tokenType, t, start, end, line in g:
-        if start[0] == lineNo: continue
-        if tokenType == tokenize.INDENT or tokenType == tokenize.DEDENT \
-                 or tokenize.tok_name[tokenType] == 'NL' \
-                 or tokenType == tokenize.ERRORTOKEN \
-                 or tokenType == tokenize.ENDMARKER \
-                 or start[0] == lineNo: continue
-        if t == 'import':
-            module = ''
-            while 1:
-                tokenType, t, start, end, line = g.next()
-                if t == ';' or tokenType == tokenize.NEWLINE:
-                    try:
-                        exec('import %s' % module) in globals()
-                    except: pass
-                        #print "Ignore: can't import %s.\t" % module
-                    break
-                elif (tokenType == tokenize.OP and t == ','):
-                    try:
-                        exec('import %s' % module) in globals()
-                    except: pass
-                        #print "Ignore: can't import %s.\t" % module
-                    module = ''
-                    continue
-                module += t + ' '
-        elif t == 'from':
-            module = ''
-            while 1:
-                tokenType, t, start, end, line = g.next()
-                if t == 'import': break
-                module += t
-            function = ''
-            while 1:
-                tokenType, t, start, end, line = g.next()
-                if  t == ',':
-                    try:
-                        exec('from %s import %s' % (module, function)) in globals()
-                    except: pass
-                        #print "Ignore: can't from %s import %s.\t" % (module, function)
-                    function = ''
-                    continue
-                elif tokenType == tokenize.NEWLINE:
-                    try:
-                        exec('from %s import %s' % (module, function)) in globals()
-                    except: pass 
-                        #print "Ignore: can't from %s import %s.\t" % (module, function)
-                    break
-                function += t + ' '
-        
-        elif t == 'class':
-            i = 0
-            l = 'class '
-            classBlock = []
-            while 1:
-                tokenType, t, start, end, line = g.next()
-                if tokenType == tokenize.INDENT:
-                    i += 1
-                    l = ' '*i*4
-                elif tokenType == tokenize.DEDENT:
-                    i -= 1
-                    l = ' '*i*4
-                    if i == 0: break
-                elif tokenType == tokenize.NEWLINE or\
-                         tokenType == tokenize.NL      or\
-                         tokenType == tokenize.COMMENT:
-                    classBlock.append(l)
-                    l = ' '*i*4
-                else:
-                    l += t + ' '
-            #print "class: %s" % classBlock[0]
-            try:
-                exec('\n'.join(classBlock)+'\n') in globals()
-            except: pass
-                #print "Ignore: can't import %s" % classBlock[0]
-        elif keyword.iskeyword(t):
-            lineNo = start[0]
-        else:
-            if t in globals():
+    try:
+        for tokenType, t, start, end, line in g:
+            if start[0] == lineNo: continue
+            if tokenType == tokenize.INDENT or tokenType == tokenize.DEDENT \
+                     or tokenize.tok_name[tokenType] == 'NL' \
+                     or tokenType == tokenize.ERRORTOKEN \
+                     or tokenType == tokenize.ENDMARKER \
+                     or start[0] == lineNo: continue
+            if t == 'import':
+                module = ''
+                while 1:
+                    tokenType, t, start, end, line = g.next()
+                    if t == ';' or tokenType == tokenize.NEWLINE:
+                        try:
+                            exec('import %s' % module) in globals()
+                        except: pass
+                            #print "Ignore: can't import %s.\t" % module
+                        break
+                    elif (tokenType == tokenize.OP and t == ','):
+                        try:
+                            exec('import %s' % module) in globals()
+                        except: pass
+                            #print "Ignore: can't import %s.\t" % module
+                        module = ''
+                        continue
+                    module += t + ' '
+            elif t == 'from':
+                module = ''
+                while 1:
+                    tokenType, t, start, end, line = g.next()
+                    if t == 'import': break
+                    module += t
+                function = ''
+                while 1:
+                    tokenType, t, start, end, line = g.next()
+                    if  t == ',':
+                        try:
+                            exec('from %s import %s' % (module, function)) in globals()
+                        except: pass
+                            #print "Ignore: can't from %s import %s.\t" % (module, function)
+                        function = ''
+                        continue
+                    elif tokenType == tokenize.NEWLINE:
+                        try:
+                            exec('from %s import %s' % (module, function)) in globals()
+                        except: pass 
+                            #print "Ignore: can't from %s import %s.\t" % (module, function)
+                        break
+                    function += t + ' '
+            
+            elif t == 'class':
+                i = 0
+                l = 'class '
+                classBlock = []
+                while 1:
+                    tokenType, t, start, end, line = g.next()
+                    if tokenType == tokenize.INDENT:
+                        i += 1
+                        l = ' '*i*4
+                    elif tokenType == tokenize.DEDENT:
+                        i -= 1
+                        l = ' '*i*4
+                        if i == 0: break
+                    elif tokenType == tokenize.NEWLINE or\
+                             tokenType == tokenize.NL      or\
+                             tokenType == tokenize.COMMENT:
+                        classBlock.append(l)
+                        l = ' '*i*4
+                    else:
+                        l += t + ' '
+                #print "class: %s" % classBlock[0]
+                try:
+                    exec('\n'.join(classBlock)+'\n') in globals()
+                except: pass
+                    #print "Ignore: can't import %s" % classBlock[0]
+            elif keyword.iskeyword(t):
                 lineNo = start[0]
-                continue
-            varName = t
-            tokenType, t, start, end, line = g.next()
-            if t == '=':
+            else:
+                if t in globals():
+                    lineNo = start[0]
+                    continue
+                varName = t
                 tokenType, t, start, end, line = g.next()
-                if tokenType == tokenize.NEWLINE: break
-                elif t == 'tips_buffer': pass
-                #see if vars ='xxx' or "xxx" or '''xxx''' or """xxx""" or str(xxx)
-                elif tokenType == tokenize.STRING or t == 'str':  
-                    #print 'sting:%s' % varName
-                    exec('%s = CT_STRINGTYPE' % varName)  in globals()
-                #see if vars = [] or list()
-                elif t == '[' or t == 'list':
-                    #print 'list:%s' % varName
-                    exec('%s= CT_LISTTYPE' % varName)  in globals()
-                #see if vars = {} or dict()
-                elif t == '{' or t == 'dict':
-                    #print 'dict:%s' % varName
-                    exec('%s = CT_DICTTYPE' % varName)  in globals()
-                #see if vars = NUMBER
-                elif tokenType == tokenize.NUMBER:
-                    pass
-                    #print 'number:%s' % varName
-                #see if vars = Set([xxx])
-                elif t == 'Set': 
-                    #print 'set:%s' % varName
-                    try:
-                        exec('%s = CT_SETTYPE' % varName)  in globals()
-                    except:
+                if t == '=':
+                    tokenType, t, start, end, line = g.next()
+                    if tokenType == tokenize.NEWLINE: break
+                    elif t == 'tips_buffer': pass
+                    #see if vars ='xxx' or "xxx" or '''xxx''' or """xxx""" or str(xxx)
+                    elif tokenType == tokenize.STRING or t == 'str':  
+                        #print 'sting:%s' % varName
+                        exec('%s = CT_STRINGTYPE' % varName)  in globals()
+                    #see if vars = [] or list()
+                    elif t == '[' or t == 'list':
+                        #print 'list:%s' % varName
+                        exec('%s= CT_LISTTYPE' % varName)  in globals()
+                    #see if vars = {} or dict()
+                    elif t == '{' or t == 'dict':
+                        #print 'dict:%s' % varName
+                        exec('%s = CT_DICTTYPE' % varName)  in globals()
+                    #see if vars = NUMBER
+                    elif tokenType == tokenize.NUMBER:
                         pass
-                #see if vars = open(xxx) or file(xxx)
-                elif t == 'open' or t == 'file':
-                    #print 'file:%s' % varName
-                    exec('%s = CT_FILETYPE' % varName)  in globals()
-                else:
-                    instance = t
-                    #pywin.debugger.set_trace()
-                    while 1:
-                        tokenType, t, start, end, line = g.next()
-                        if tokenType == tokenize.NAME and t == '.':
-                            instance += t
-                        elif tokenType == tokenize.NEWLINE: break
-                        else:
-                            #print 'instance: %s' % line
-                            try:
-                                exec('%s = %s' % (varName, instance))  in globals()
-                            except: pass
-                                #print 'ERROR: %s = %s' % (varName, instance)  
-                            break
-            lineNo = start[0]
-    return
+                        #print 'number:%s' % varName
+                    #see if vars = Set([xxx])
+                    elif t == 'Set': 
+                        #print 'set:%s' % varName
+                        try:
+                            exec('%s = CT_SETTYPE' % varName)  in globals()
+                        except:
+                            pass
+                    #see if vars = open(xxx) or file(xxx)
+                    elif t == 'open' or t == 'file':
+                        #print 'file:%s' % varName
+                        exec('%s = CT_FILETYPE' % varName)  in globals()
+                    else:
+                        instance = t
+                        #pywin.debugger.set_trace()
+                        while 1:
+                            tokenType, t, start, end, line = g.next()
+                            if tokenType == tokenize.NAME and t == '.':
+                                instance += t
+                            elif tokenType == tokenize.NEWLINE: break
+                            else:
+                                #print 'instance: %s' % line
+                                try:
+                                    exec('%s = %s' % (varName, instance))  in globals()
+                                except: pass
+                                    #print 'ERROR: %s = %s' % (varName, instance)  
+                                break
+                lineNo = start[0]
+    finally:
+        return
 
 def CT_MapKeys():
     """mapping keys"""
