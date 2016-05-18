@@ -141,6 +141,8 @@ python << PYTHONEOF
 import vim
 import __builtin__
 from string import letters
+import warnings
+warnings.filterwarnings("ignore", "the sets module is deprecated")
 try:
     from sets import Set
 except:
